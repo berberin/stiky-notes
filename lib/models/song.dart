@@ -1,4 +1,4 @@
-import 'package:stiky_notes/services/audio_service.dart';
+import 'package:stiky_notes/app/data/service/audio_service.dart';
 
 class Song {
   String name;

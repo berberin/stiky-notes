@@ -26,8 +26,3 @@ class Album {
   }
 }
 
-extension CoverData on AlbumModel {
-  Future<Uint8List?> loadCoverData() async {
-    return OnAudioQuery().queryArtwork(id, ArtworkType.ALBUM);
-  }
-}

@@ -1,10 +1,10 @@
-import 'package:on_audio_room/on_audio_room.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class DependencyManager {
   DependencyManager._();
 
   static Future<void> init() async {
-    await OnAudioRoom().initRoom();
-    print(OnAudioRoom().getRoomInfo(RoomType.PLAYLIST).length);
+    var _audioQuery = OnAudioQuery();
+    await _audioQuery.permissionsRequest();
   }
 }

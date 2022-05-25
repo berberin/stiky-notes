@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:stiky_notes/app/data/model/album.dart';
 import 'package:stiky_notes/app/theme/app_color.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,6 +16,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Album> albums = <Album>[];
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    OnAudioQuery().queryAlbums().then((albumModels) {
+      for ( var albumModel in albumModels){
+        albums.add(Album.fromAlbumAudioQuery(albumModel));
+      }
+      setState((){});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +120,7 @@ class _HomePageState extends State<HomePage> {
                   height: 50.h,
                 ),
                 Text(
-                  "RECENTLY VIEWED ALBUMS",
+                  "ALBUMS",
                   style: GoogleFonts.workSans(
                     textStyle: TextStyle(
                       fontSize: 10.sp,
@@ -118,78 +137,8 @@ class _HomePageState extends State<HomePage> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: List.generate(
-                      12,
-                      (index) => GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          width: 159.w,
-                          margin: EdgeInsets.only(right: 16.w),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 159.w,
-                                height: 159.h,
-                                decoration: BoxDecoration(
-                                  color: AppColors.greyC4,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 12.h,
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Album name",
-                                          style: GoogleFonts.workSans(
-                                            textStyle: TextStyle(
-                                              fontSize: 16.sp,
-                                              color: Colors.black,
-                                              fontStyle: FontStyle.normal,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 12.h,
-                                        ),
-                                        Text(
-                                          "Artist name",
-                                          style: GoogleFonts.workSans(
-                                            textStyle: TextStyle(
-                                              fontSize: 10.sp,
-                                              color: Colors.black,
-                                              fontStyle: FontStyle.normal,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 4.w),
-                                    child: SvgPicture.asset(
-                                      "assets/svg/bookmark_border.svg",
-                                      height: 24.r,
-                                      width: 24.r,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
+                      albums.length,
+                      (index) => AlbumWidget(album: albums[index],),
                     ),
                   ),
                 ),
@@ -374,6 +323,106 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AlbumWidget extends StatefulWidget {
+  final Album album;
+  const AlbumWidget({
+    Key? key,
+    required this.album,
+  }) : super(key: key);
+
+  @override
+  State<AlbumWidget> createState() => _AlbumWidgetState();
+}
+
+class _AlbumWidgetState extends State<AlbumWidget> {
+  Uint8List? cover;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.album.loadCoverData().then((value) {
+      setState(() {
+        cover = value;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        width: 159.w,
+        margin: EdgeInsets.only(right: 16.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 159.w,
+              height: 159.h,
+              decoration: const BoxDecoration(
+                color: AppColors.greyC4,
+              ),
+              child: cover == null ? Container() : Image.memory(cover!),
+            ),
+            SizedBox(
+              height: 12.h,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.album.albumName,
+                        style: GoogleFonts.workSans(
+                          textStyle: TextStyle(
+                            fontSize: 16.sp,
+                            color: Colors.black,
+                            fontStyle: FontStyle.normal,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 12.h,
+                      ),
+                      Text(
+                        widget.album.artist ?? 'Unknown',
+                        style: GoogleFonts.workSans(
+                          textStyle: TextStyle(
+                            fontSize: 10.sp,
+                            color: Colors.black,
+                            fontStyle: FontStyle.normal,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 4.w),
+                  child: SvgPicture.asset(
+                    "assets/svg/bookmark_border.svg",
+                    height: 24.r,
+                    width: 24.r,
+                    fit: BoxFit.fill,
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),

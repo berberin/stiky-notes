@@ -18,16 +18,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Album> albums = <Album>[];
 
-
   @override
   void initState() {
     super.initState();
 
     OnAudioQuery().queryAlbums().then((albumModels) {
-      for ( var albumModel in albumModels){
+      for (var albumModel in albumModels) {
         albums.add(Album.fromAlbumAudioQuery(albumModel));
       }
-      setState((){});
+      setState(() {});
     });
   }
 
@@ -136,9 +135,12 @@ class _HomePageState extends State<HomePage> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: List.generate(
                       albums.length,
-                      (index) => AlbumWidget(album: albums[index],),
+                      (index) => AlbumWidget(
+                        album: albums[index],
+                      ),
                     ),
                   ),
                 ),
@@ -371,7 +373,12 @@ class _AlbumWidgetState extends State<AlbumWidget> {
               decoration: const BoxDecoration(
                 color: AppColors.greyC4,
               ),
-              child: cover == null ? Container() : Image.memory(cover!),
+              child: cover == null
+                  ? Container()
+                  : Image.memory(
+                      cover!,
+                      fit: BoxFit.cover,
+                    ),
             ),
             SizedBox(
               height: 12.h,

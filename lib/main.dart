@@ -4,6 +4,7 @@ import 'package:stiky_notes/app/data/dependency.dart';
 import 'package:stiky_notes/app/module/homepage/homepage.dart';
 
 void main() async {
+  await WidgetsFlutterBinding.ensureInitialized();
   await DependencyManager.init();
   runApp(const MyApp());
 }
